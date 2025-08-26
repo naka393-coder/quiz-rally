@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>社内イベント クイズラリー</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --header-bg-color: #000000;
+            --button-bg-color: #f64850;
+            --hint-button-bg-color: #888888;
+            --reset-button-bg-color: #888888;
+            --body-bg-color: #eef3f5;
+            --card-bg-color: #ffffff;
+            --text-color: #333;
+            --white: #fff;
+            --light-gray: #e9ecef;
+            --success-color: #28a745;
+            --error-color: #dc3545;
+        }
+        body {
+            margin: 0;
+            font-family: 'Noto Sans JP', sans-serif;
+            background-color: var(--body-bg-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        .container {
+            width: 100%;
+            max-width: 500px;
+            height: 90vh;
+            max-height: 800px;
+            background-color: var(--card-bg-color);
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 24px;
+            margin: 20px;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        .hidden {
+            display: none;
+        }
+        #initial-screen {
+            text-align: center;
+        }
+        #initial-screen .logo h1 {
+            color: #000000;
+            font-weight: 700;
+            margin-top: 0;
+            margin-bottom: 24px;
+        }
+        #initial-screen .description {
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        #team-name-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 16px;
+        }
+        #start-button {
+            width: 100%;
+            padding: 14px;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--white);
+            background-color: var(--button-bg-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: filter 0.3s;
+        }
+        #start-button:hover {
+            filter: brightness(0.9);
+        }
+        .reset-button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 12px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--white);
+            background-color: var(--reset-button-bg-color);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: filter 0.3s;
+        }
+        .reset-button:hover {
+            filter: brightness(0.9);
+        }
+        #quiz-screen {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--header-bg-color);
+            color: var(--white);
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            flex-shrink: 0;
+        }
+        .quiz-header div {
+            text-align: right;
+        }
+        .quiz-header strong {
+            font-weight: 400;
+            font-size: 0.9em;
+        }
+        #team-name-output, #score-output, #hint-count-output, #progress-output { /* 変更点 */
+            font-weight: 700;
+            font-size: 1.1em;
+        }
+        #score-display, #hint-count-display, #progress-display { /* 変更点 */
+             margin-top: 4px;
+        }
+        #quiz-container {
+            overflow-y: auto;
+            padding-right: 10px;
+            flex-grow: 1;
+        }
+        .quiz-card {
+            background-color: var(--card-bg-color);
+            border: 1px solid var(--light-gray);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border-left: 5px solid var(--light-gray);
+            transition: all 0.3s;
+        }
+        .quiz-card h2 {
+            margin-top: 0;
+            margin-bottom: 16px;
+            color: var(--text-color);
+        }
+        .quiz-card input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--light-gray);
+            border-radius: 8px;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 12px;
+        }
+        .quiz-card button {
+            width: 100%;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--white);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: filter 0.3s, background-color 0.3s;
+            margin-bottom: 10px;
+        }
+        .answer-button {
+             background-color: var(--button-bg-color);
+        }
+        .answer-button:hover {
+            filter: brightness(0.9);
+        }
+        .hint-button {
+            background-color: var(--hint-button-bg-color);
+            font-size: 14px;
+            padding: 10px;
+        }
+        .hint-button:hover {
+            filter: brightness(0.9);
+        }
+        .quiz-card .result {
+            margin-top: 12px;
+            margin-bottom: 0;
+            font-weight: 700;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .hint-text {
+            background-color: #f0f7ff;
+            border: 1px solid #cce5ff;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 8px 0 0 0;
+            color: #004085;
+            font-weight: 500;
+        }
+        .quiz-card.correct {
+            border-left-color: var(--success-color);
+            background-color: #f0fff4;
+        }
+        .quiz-card.correct input,
+        .quiz-card.correct .answer-button,
+        .quiz-card.correct .hint-button {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="initial-screen">
+            <header class="logo">
+                <h1>EVENT QUIZ RALLY</h1>
+            </header>
+            <main>
+                <p class="description">ようこそ！<br>チーム名を入力してクイズを始めよう！</p>
+                <input type="text" id="team-name-input" placeholder="チーム名を入力">
+                <button id="start-button">クイズをはじめる</button>
+                <button id="reset-button-top" class="reset-button">記録をリセット</button>
+            </main>
+        </div>
+        <div id="quiz-screen" class="hidden">
+            <header class="quiz-header">
+                <div id="team-display">
+                    <strong>TEAM:</strong><br><span id="team-name-output"></span>
+                </div>
+                <div>
+                    <div id="score-display">
+                        <strong>SCORE:</strong> <span id="score-output">0</span> pt
+                    </div>
+                    <div id="progress-display">
+                        <strong>PROGRESS:</strong> <span id="progress-output">0 / 50</span>
+                    </div>
+                    <div id="hint-count-display">
+                        <strong>HINTS USED:</strong> <span id="hint-count-output">0</span>
+                    </div>
+                </div>
+            </header>
+            <main id="quiz-container">
+            </main>
+            <button id="reset-button-quiz" class="reset-button">記録をリセット</button>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const quizzes = [
+                { id: 1, answer: '富士山', hint: '静岡県と山梨県にまたがる日本一の山です。', hintCost: 5 },
+                { id: 2, answer: '2019', hint: '令和元年です。', hintCost: 5 },
+                { id: 3, answer: '2', hint: 'ペア、カップル、デュオ。', hintCost: 5 }
+            ];
+            for (let i = 4; i <= 50; i++) {
+                quizzes.push({ id: i, answer: 'あ', hint: 'ひらがなの最初の文字です。', hintCost: 5 });
+            }
+
+            const POINTS_PER_CORRECT = 10;
+            const initialScreen = document.getElementById('initial-screen');
+            const quizScreen = document.getElementById('quiz-screen');
+            const startButton = document.getElementById('start-button');
+            const resetButtonTop = document.getElementById('reset-button-top');
+            const resetButtonQuiz = document.getElementById('reset-button-quiz');
+            const teamNameInput = document.getElementById('team-name-input');
+            const teamNameOutput = document.getElementById('team-name-output');
+            const scoreOutput = document.getElementById('score-output');
+            const hintCountOutput = document.getElementById('hint-count-output');
+            const progressOutput = document.getElementById('progress-output'); // 変更点
+            const quizContainer = document.getElementById('quiz-container');
+            
+            let teamName = '';
+            let score = 0;
+            let correctAnswers = [];
+            let revealedHints = [];
+
+            startButton.addEventListener('click', startGame);
+            resetButtonTop.addEventListener('click', resetGame);
+            resetButtonQuiz.addEventListener('click', resetGame);
+            
+            quizContainer.addEventListener('click', (event) => {
+                if (event.target.classList.contains('answer-button')) {
+                    handleAnswerSubmit(event);
+                }
+                if (event.target.classList.contains('hint-button')) {
+                    handleHintRequest(event);
+                }
+            });
+
+            loadState();
+
+            function startGame() {
+                const name = teamNameInput.value.trim();
+                if (name === '') {
+                    alert('チーム名を入力してください。');
+                    return;
+                }
+                teamName = name;
+                saveState(); // 先に保存
+                initialScreen.classList.add('hidden');
+                quizScreen.classList.remove('hidden');
+                renderQuizScreen();
+            }
+
+            function resetGame() {
+                const isConfirmed = confirm('すべての記録（チーム名、スコア、ヒント）がリセットされます。よろしいですか？');
+                if (isConfirmed) {
+                    localStorage.removeItem('quizRallyState');
+                    alert('記録をリセットしました。');
+                    location.reload();
+                }
+            }
+
+            function renderQuizScreen() {
+                teamNameOutput.textContent = teamName;
+                scoreOutput.textContent = score;
+                hintCountOutput.textContent = revealedHints.length;
+                progressOutput.textContent = `${correctAnswers.length} / ${quizzes.length}`; // 変更点
+
+                quizContainer.innerHTML = '';
+                quizzes.forEach(quiz => {
+                    const isCorrect = correctAnswers.includes(quiz.id);
+                    const isHintRevealed = revealedHints.includes(quiz.id);
+                    const card = document.createElement('div');
+                    card.className = 'quiz-card';
+                    card.dataset.quizId = quiz.id;
+
+                    if (isCorrect) card.classList.add('correct');
+
+                    const resultMessage = isCorrect ? `正解！ (+${POINTS_PER_CORRECT}pt)<br>答え: ${quiz.answer}` : '';
+                    
+                    card.innerHTML = `
+                        <h2>Q${quiz.id}</h2>
+                        <input type='text' placeholder='答えを入力' ${isCorrect ? 'disabled' : ''}>
+                        <button class="answer-button" ${isCorrect ? "style='display:none;'" : ''}>回答する</button>
+                        <button class="hint-button" ${isCorrect || isHintRevealed ? "style='display:none;'" : ''}>ヒントを見る (${quiz.hintCost}pt消費)</button>
+                        <p class="hint-text ${isHintRevealed ? '' : 'hidden'}">${quiz.hint}</p>
+                        <p class='result ${isCorrect ? 'correct-msg' : ''}'>${resultMessage}</p>
+                    `;
+                    quizContainer.appendChild(card);
+                });
+            }
+
+            function handleAnswerSubmit(event) {
+                const card = event.target.closest('.quiz-card');
+                const quizId = parseInt(card.dataset.quizId, 10);
+                const input = card.querySelector('input');
+                const userAnswer = input.value.trim();
+                if (userAnswer === '') {
+                    alert('答えを入力してください。');
+                    return;
+                }
+                const quiz = quizzes.find(q => q.id === quizId);
+                const isAnswerCorrect = userAnswer.toLowerCase().normalize('NFKC') === quiz.answer.toLowerCase().normalize('NFKC');
+
+                if (isAnswerCorrect) {
+                    if (!correctAnswers.includes(quizId)) { // 重複してポイントが入らないように
+                        score += POINTS_PER_CORRECT;
+                        correctAnswers.push(quizId);
+                        saveState();
+                        renderQuizScreen();
+                    }
+                } else {
+                    card.classList.add('incorrect');
+                    card.querySelector('.result').textContent = '残念！不正解';
+                    setTimeout(() => {
+                        card.classList.remove('incorrect');
+                        card.querySelector('.result').textContent = '';
+                    }, 2000);
+                }
+            }
+            
+            function handleHintRequest(event) {
+                const card = event.target.closest('.quiz-card');
+                const quizId = parseInt(card.dataset.quizId, 10);
+                const quiz = quizzes.find(q => q.id === quizId);
+
+                const isConfirmed = confirm(`${quiz.hintCost}ptを消費してヒントを見ますか？`);
+                if (!isConfirmed) return;
+
+                if (score < quiz.hintCost) {
+                    alert('ポイントが足りません。');
+                    return;
+                }
+
+                score -= quiz.hintCost;
+                revealedHints.push(quizId);
+                
+                saveState();
+                renderQuizScreen();
+            }
+
+            function saveState() {
+                const state = { teamName, score, correctAnswers, revealedHints };
+                localStorage.setItem('quizRallyState', JSON.stringify(state));
+            }
+
+            function loadState() {
+                const savedState = localStorage.getItem('quizRallyState');
+                if (savedState) {
+                    const state = JSON.parse(savedState);
+                    teamName = state.teamName;
+                    score = state.score;
+                    correctAnswers = state.correctAnswers;
+                    revealedHints = state.revealedHints || [];
+                    
+                    if (teamName) {
+                        initialScreen.classList.add('hidden');
+                        quizScreen.classList.remove('hidden');
+                        teamNameInput.value = teamName;
+                        renderQuizScreen();
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>
